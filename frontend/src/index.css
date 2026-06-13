@@ -1,0 +1,253 @@
+@import url("https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --ka-navy-950: #060e22;
+    --ka-navy-900: #0a1733;
+    --ka-navy-800: #102045;
+    --ka-navy-700: #15295a;
+    --ka-gold-500: #d4af37;
+    --ka-gold-400: #e7c66a;
+    --ka-gold-300: #f0d97a;
+    --ka-gold-700: #8b7039;
+    --ka-ivory: #f5efe1;
+    --ka-cream: #faf6ed;
+    --ka-line: rgba(212, 175, 55, 0.28);
+}
+
+html, body, #root {
+    background: var(--ka-navy-900);
+    color: var(--ka-ivory);
+}
+
+body {
+    margin: 0;
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--ka-navy-900);
+}
+
+.font-display {
+    font-family: "Italiana", "Cormorant Garamond", serif;
+    letter-spacing: 0.08em;
+}
+.font-serif-italic {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+.font-serif {
+    font-family: "Cormorant Garamond", serif;
+}
+
+/* shadcn variables (tuned to luxury palette) */
+@layer base {
+    :root {
+        --background: 222 60% 8%;
+        --foreground: 44 56% 92%;
+        --card: 222 58% 12%;
+        --card-foreground: 44 56% 92%;
+        --popover: 222 58% 10%;
+        --popover-foreground: 44 56% 92%;
+        --primary: 44 65% 53%;
+        --primary-foreground: 222 60% 8%;
+        --secondary: 222 50% 18%;
+        --secondary-foreground: 44 56% 92%;
+        --muted: 222 40% 18%;
+        --muted-foreground: 44 30% 78%;
+        --accent: 44 65% 53%;
+        --accent-foreground: 222 60% 8%;
+        --destructive: 0 70% 45%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 44 35% 28%;
+        --input: 222 40% 18%;
+        --ring: 44 65% 53%;
+        --radius: 0.25rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+::selection {
+    background: rgba(212, 175, 55, 0.32);
+    color: var(--ka-ivory);
+}
+
+/* Gold shimmer used by loader + accents */
+@keyframes shimmer {
+    0% { background-position: -120% 0; }
+    100% { background-position: 220% 0; }
+}
+.shimmer-gold {
+    background: linear-gradient(
+        100deg,
+        rgba(212, 175, 55, 0.0) 30%,
+        rgba(240, 217, 122, 0.95) 50%,
+        rgba(212, 175, 55, 0.0) 70%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes fadeRise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-rise {
+    animation: fadeRise 1.1s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleFade {
+    from { opacity: 0; transform: scale(1.04); }
+    to { opacity: 1; transform: scale(1); }
+}
+.video-fade {
+    animation: scaleFade 1.6s ease-out both;
+}
+
+/* Gold hairline divider */
+.gold-rule {
+    height: 1px;
+    background: linear-gradient(90deg,
+        rgba(212, 175, 55, 0) 0%,
+        rgba(212, 175, 55, 0.7) 50%,
+        rgba(212, 175, 55, 0) 100%);
+}
+
+/* Border ornament for hero */
+.gold-frame::before, .gold-frame::after {
+    content: "";
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    border: 1px solid rgba(212, 175, 55, 0.65);
+    pointer-events: none;
+}
+.gold-frame::before { top: 22px; left: 22px; border-right: none; border-bottom: none; }
+.gold-frame::after { bottom: 22px; right: 22px; border-left: none; border-top: none; }
+
+/* Subtle grain overlay */
+.grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Product card */
+.ka-card {
+    background: linear-gradient(180deg, rgba(16, 32, 69, 0.85), rgba(10, 23, 51, 0.95));
+    border: 1px solid var(--ka-line);
+    transition: transform 0.5s cubic-bezier(0.2, 0.6, 0.2, 1),
+                border-color 0.5s ease,
+                box-shadow 0.5s ease;
+}
+.ka-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212, 175, 55, 0.7);
+    box-shadow: 0 30px 60px -30px rgba(212, 175, 55, 0.35);
+}
+
+/* WhatsApp gold button */
+.btn-gold {
+    background: linear-gradient(180deg, #efd17b, #c89a2f);
+    color: #0a1733;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 12px 22px;
+    border: 1px solid rgba(212, 175, 55, 0.9);
+    box-shadow: 0 10px 30px -12px rgba(212, 175, 55, 0.55);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
+}
+.btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px -14px rgba(212, 175, 55, 0.7);
+    filter: brightness(1.05);
+}
+
+.btn-outline-gold {
+    background: transparent;
+    color: var(--ka-gold-300);
+    border: 1px solid rgba(212, 175, 55, 0.7);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 11px;
+    padding: 12px 22px;
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+.btn-outline-gold:hover {
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--ka-ivory);
+    border-color: var(--ka-gold-400);
+}
+
+/* Tier chip */
+.tier-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    color: var(--ka-gold-300);
+    background: rgba(212, 175, 55, 0.08);
+    border-radius: 999px;
+}
+
+/* Hidden scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Loader bar */
+@keyframes loadbar {
+    0% { transform: scaleX(0); transform-origin: left; }
+    50% { transform: scaleX(1); transform-origin: left; }
+    50.01% { transform: scaleX(1); transform-origin: right; }
+    100% { transform: scaleX(0); transform-origin: right; }
+}
+.loadbar { animation: loadbar 2.4s ease-in-out infinite; }
+
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spinSlow 18s linear infinite; }
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit; margin-right: inherit; margin-top: inherit; margin-bottom: inherit;
+        padding-left: inherit; padding-right: inherit; padding-top: inherit; padding-bottom: inherit;
+        column-gap: inherit; row-gap: inherit; gap: inherit;
+        border-left-width: inherit; border-right-width: inherit; border-top-width: inherit; border-bottom-width: inherit;
+        border-left-style: inherit; border-right-style: inherit; border-top-style: inherit; border-bottom-style: inherit;
+        border-left-color: inherit; border-right-color: inherit; border-top-color: inherit; border-bottom-color: inherit;
+    }
+}

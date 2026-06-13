@@ -1,0 +1,5 @@
+.App {
+    min-height: 100vh;
+    background: var(--ka-navy-900);
+    color: var(--ka-ivory);
+}
