@@ -8,12 +8,12 @@ const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}`;
 // represented via the catalog imagery. Each tile links to the IG profile.
 // Switch to live oEmbed only if needed — keeps build cost low.
 const TILES = [
-  { img: PRODUCTS[2].image, caption: "Sapphire Mandala · Kashmir" },
-  { img: PRODUCTS[1].image, caption: "Persian Aubusson" },
-  { img: PRODUCTS[3].image, caption: "Crimson Kashan" },
-  { img: PRODUCTS[0].image, caption: "Royal Tabriz" },
-  { img: PRODUCTS[5].image, caption: "Indigo Bouquet" },
-  { img: PRODUCTS[6].image, caption: "Emerald Court" },
+  { img: PRODUCTS[10].image, caption: "Onyx Versailles · Silk" },
+  { img: PRODUCTS[8].image, caption: "Emerald Court · Kashmir" },
+  { img: PRODUCTS[9].image, caption: "Indigo Garden Tabriz" },
+  { img: PRODUCTS[11].image, caption: "Midnight Floral Kashan" },
+  { img: PRODUCTS[2].image, caption: "Sapphire Mandala" },
+  { img: PRODUCTS[14].image, caption: "Crimson Mughal Court" },
 ];
 
 export default function InstagramStrip() {
