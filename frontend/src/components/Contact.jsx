@@ -51,7 +51,7 @@ export default function Contact() {
             {
               icon: <Mail size={18} />,
               label: "Studio Email",
-              value: "atelier@kanha-carpets.com",
+              value: "kanhaatlier@gmail.com",
               testid: "contact-email",
             },
             {

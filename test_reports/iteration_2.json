@@ -1,0 +1,29 @@
+{
+  "summary": "Iteration 2 re-test of Kanha Atelier. Backend: 5/5 pytest cases pass (health, root, /api/geo multi-provider, /api/exchange-rate, /api/status POST+GET). Frontend: 28/29 Playwright checks pass — covers SEO (title, description, OG, Twitter, JSON-LD Store with email kanhaatlier@gmail.com), currency dropdown (clickable indicator, menu, INR/USD/AUTO options, ₹/$ price flip, whole-dollar USD, localStorage 'ka_currency_override' write+clear, persistence across reload), Instagram strip with handle link + follow CTA + 6 tiles (all linking to https://www.instagram.com/kanha_enterprises_carpet), nav 'Instagram' link (data-testid='nav-link-atelier-gram') smooth-scrolls to the strip, contact-email card shows 'kanhaatlier@gmail.com' (exact spelling), and regression for 8 product WhatsApp deep-links (wa.me/919369921454?text=...).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_kanha_backend.py",
+    "/app/test_reports/pytest/kanha_backend.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "frontend/public/index.html SEO/OG/JSON-LD tags are only picked up by the CRA dev server after a frontend restart (HtmlWebpackPlugin caches the template). The initial test fetch of '/' returned the stale 'A product of emergent.sh' meta description until I ran `sudo supervisorctl restart frontend`. This is fine for production (build step bakes them in), but main agent should be aware: any future edits to public/index.html require a frontend restart to take effect in the preview URL.",
+    "backend/server.py: logger is still defined at the bottom of the file (line 173) but referenced inside /api/geo and /api/exchange-rate. Works at runtime but is fragile — move the logger init above the routes. Same comment as iteration_1.",
+    "backend/server.py: still using synchronous requests.get(...) inside async route handlers for /api/geo (3 providers) and /api/exchange-rate. With 3 providers × 3.5s timeout, /api/geo could block the event loop for up to ~10s on a worst-case fallback. Recommend httpx.AsyncClient.",
+    "InstagramStrip.jsx uses catalog imagery instead of real IG posts — fine as a stub but worth flagging to user since the section caption says 'From the loom, to your feed.'",
+    "USD rounding now produces clean whole-dollar prices (e.g. KA-LUX-001 = $194) — matches iteration_1 feedback. Good."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "100%", "frontend": "100% of features (28/29 raw, the one fail was my own test-script selector typo — filter-luxury vs tier-filter-luxury — not an app bug)" },
+  "test_credentials": "N/A (no auth)",
+  "seed_data_creation": "1 row in MongoDB status_checks {client_name:'TEST_kanha_pytest'} (pre-existing prefix from iteration 1).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration-2 acceptance criteria verified live on https://kanha-atelier.preview.emergentagent.com after a one-time `sudo supervisorctl restart frontend`. Key data-testids confirmed: currency-indicator, currency-menu, currency-option-{auto|inr|usd}, instagram-strip, instagram-handle-link, instagram-follow-cta, instagram-tile-0..5, nav-link-atelier-gram, contact-email. localStorage key 'ka_currency_override' is correctly written ('INR'/'USD') and removed for AUTO. JSON-LD <script type='application/ld+json'> contains @type='Store', name='Kanha Atelier' and email='kanhaatlier@gmail.com' (user's deliberate spelling). Tier filter selectors are 'tier-filter-{luxury|budget|all}' (NOT 'filter-{tier}').",
+  "rca of the issue": "No bugs reproduced. The one transient failure during testing (SEO meta tags missing from served HTML) was resolved by restarting the frontend service — CRA dev server had cached an older public/index.html. Documented above so the main agent doesn't ship an iteration where edits to public/index.html are not visible until restart."
+}

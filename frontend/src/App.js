@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Collections from "./components/Collections";
 import Craftsmanship from "./components/Craftsmanship";
+import InstagramStrip from "./components/InstagramStrip";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
@@ -17,6 +18,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [currencyCtx, setCurrencyCtx] = useState(null);
   const [currencyResolved, setCurrencyResolved] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +31,7 @@ const Home = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadTick]);
 
   return (
     <div data-testid="kanha-home">
@@ -39,11 +41,15 @@ const Home = () => {
           onDone={() => setLoading(false)}
         />
       )}
-      <Navbar currencyCtx={currencyCtx} />
+      <Navbar
+        currencyCtx={currencyCtx}
+        onCurrencyChange={() => setReloadTick((t) => t + 1)}
+      />
       <main>
         <Hero />
         <Collections currencyCtx={currencyCtx} />
         <Craftsmanship />
+        <InstagramStrip />
         <About />
         <Contact />
       </main>

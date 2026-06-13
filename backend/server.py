@@ -73,11 +73,11 @@ async def health():
 
 @api_router.get("/geo", response_model=GeoResponse)
 async def geo(request: Request):
-    """Detect visitor country from IP. India => INR, else USD."""
+    """Detect visitor country from IP. India => INR, else USD.
+    Tries multiple free geo providers for robustness; falls back to US/USD."""
     ip = _client_ip(request)
     country_code = "US"
     country_name = "United States"
-    # Skip lookup for local / private IPs (fallback to US/USD)
     private_prefixes = ("127.", "10.", "192.168.", "172.16.", "172.17.",
                         "172.18.", "172.19.", "172.20.", "172.21.",
                         "172.22.", "172.23.", "172.24.", "172.25.",
@@ -86,14 +86,26 @@ async def geo(request: Request):
     is_private = (not ip) or any(ip.startswith(p) for p in private_prefixes)
 
     if not is_private:
-        try:
-            r = requests.get(f"https://ipapi.co/{ip}/json/", timeout=4)
-            if r.status_code == 200:
-                data = r.json()
-                country_code = (data.get("country_code") or "US").upper()
-                country_name = data.get("country_name") or country_name
-        except Exception as e:
-            logger.warning(f"ipapi lookup failed for {ip}: {e}")
+        # Provider chain — first hit wins
+        providers = [
+            (f"https://ipapi.co/{ip}/json/", "country_code", "country_name"),
+            (f"https://ipwho.is/{ip}", "country_code", "country"),
+            (f"https://ipinfo.io/{ip}/json", "country", "country"),
+        ]
+        for url, code_key, name_key in providers:
+            try:
+                r = requests.get(url, timeout=3.5,
+                                 headers={"User-Agent": "KanhaAtelier/1.0"})
+                if r.status_code == 200:
+                    data = r.json()
+                    cc = data.get(code_key)
+                    if cc:
+                        country_code = str(cc).upper()
+                        country_name = data.get(name_key) or country_name
+                        break
+            except Exception as e:
+                logger.warning(f"geo provider {url} failed: {e}")
+                continue
 
     if country_code == "IN":
         currency, symbol = "INR", "₹"

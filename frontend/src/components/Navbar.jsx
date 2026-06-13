@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { LOGOS } from "../data/products";
+import { readOverride, writeOverride } from "../lib/currency";
 
 const LINKS = [
   { id: "home", label: "Home" },
   { id: "collections", label: "Collections" },
   { id: "craftsmanship", label: "Craftsmanship" },
+  { id: "atelier-gram", label: "Instagram" },
   { id: "about", label: "Atelier" },
   { id: "contact", label: "Contact" },
 ];
 
-export default function Navbar({ currencyCtx }) {
+export default function Navbar({ currencyCtx, onCurrencyChange }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [curOpen, setCurOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onClick = (e) => {
+      if (!e.target.closest("[data-currency-menu]")) setCurOpen(false);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
   }, []);
 
   const scrollTo = (id) => {
@@ -29,6 +40,15 @@ export default function Navbar({ currencyCtx }) {
   const curLabel = currencyCtx?.geo
     ? `${currencyCtx.geo.symbol} ${currencyCtx.geo.currency}`
     : "—";
+
+  const setCurrency = (mode) => {
+    // mode: "AUTO" | "INR" | "USD"
+    writeOverride(mode === "AUTO" ? null : mode);
+    setCurOpen(false);
+    onCurrencyChange?.();
+  };
+
+  const override = readOverride();
 
   return (
     <header
@@ -60,7 +80,7 @@ export default function Navbar({ currencyCtx }) {
           </div>
         </button>
 
-        <nav className="hidden lg:flex items-center gap-10">
+        <nav className="hidden lg:flex items-center gap-8">
           {LINKS.map((l) => (
             <button
               key={l.id}
@@ -74,14 +94,49 @@ export default function Navbar({ currencyCtx }) {
         </nav>
 
         <div className="flex items-center gap-4">
-          <span
-            data-testid="currency-indicator"
-            className="hidden md:inline-flex tier-chip"
-            title={currencyCtx?.geo?.country_name || ""}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--ka-gold-400)]" />
-            {curLabel}
-          </span>
+          {/* Currency toggle */}
+          <div className="relative hidden md:block" data-currency-menu>
+            <button
+              onClick={() => setCurOpen((v) => !v)}
+              className="tier-chip cursor-pointer inline-flex items-center gap-2"
+              data-testid="currency-indicator"
+              title={currencyCtx?.geo?.country_name || ""}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--ka-gold-400)]" />
+              {curLabel}
+              <ChevronDown size={12} />
+            </button>
+            {curOpen && (
+              <div
+                className="absolute right-0 mt-2 w-56 bg-[#060e22] border border-[rgba(212,175,55,0.35)] shadow-2xl z-50"
+                data-testid="currency-menu"
+              >
+                <div className="px-4 py-3 border-b border-[rgba(212,175,55,0.2)] text-[10px] tracking-[0.3em] uppercase text-[var(--ka-gold-300)]/80">
+                  Select Currency
+                </div>
+                {[
+                  { k: "AUTO", label: "Auto (by location)", hint: !override ? "active" : "" },
+                  { k: "INR", label: "₹ Indian Rupee", hint: override === "INR" ? "active" : "" },
+                  { k: "USD", label: "$ US Dollar", hint: override === "USD" ? "active" : "" },
+                ].map((opt) => (
+                  <button
+                    key={opt.k}
+                    onClick={() => setCurrency(opt.k)}
+                    data-testid={`currency-option-${opt.k.toLowerCase()}`}
+                    className="w-full flex items-center justify-between px-4 py-3 text-left text-sm text-[var(--ka-ivory)]/85 hover:bg-[rgba(212,175,55,0.08)] hover:text-[var(--ka-gold-300)] transition-colors"
+                  >
+                    <span>{opt.label}</span>
+                    {opt.hint && (
+                      <span className="text-[9px] tracking-[0.3em] uppercase text-[var(--ka-gold-400)]">
+                        {opt.hint}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => scrollTo("contact")}
             className="hidden md:inline-block btn-outline-gold"
@@ -117,7 +172,22 @@ export default function Navbar({ currencyCtx }) {
               </button>
             ))}
             <div className="gold-rule" />
-            <div className="tier-chip self-start">{curLabel}</div>
+            <div className="flex flex-wrap gap-2">
+              {["AUTO", "INR", "USD"].map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setCurrency(k)}
+                  data-testid={`mobile-currency-${k.toLowerCase()}`}
+                  className={`px-3 py-1.5 text-[10px] tracking-[0.25em] uppercase border ${
+                    (k === "AUTO" && !override) || override === k
+                      ? "border-[var(--ka-gold-400)] text-[var(--ka-gold-300)]"
+                      : "border-[rgba(212,175,55,0.3)] text-[var(--ka-ivory)]/70"
+                  }`}
+                >
+                  {k === "AUTO" ? "Auto" : k === "INR" ? "₹ INR" : "$ USD"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
