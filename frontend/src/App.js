@@ -16,11 +16,15 @@ import { detectCurrency } from "./lib/currency";
 const Home = () => {
   const [loading, setLoading] = useState(true);
   const [currencyCtx, setCurrencyCtx] = useState(null);
+  const [currencyResolved, setCurrencyResolved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     detectCurrency().then((ctx) => {
-      if (!cancelled) setCurrencyCtx(ctx);
+      if (!cancelled) {
+        setCurrencyCtx(ctx);
+        setCurrencyResolved(true);
+      }
     });
     return () => {
       cancelled = true;
@@ -29,7 +33,12 @@ const Home = () => {
 
   return (
     <div data-testid="kanha-home">
-      {loading && <LoadingScreen onDone={() => setLoading(false)} />}
+      {loading && (
+        <LoadingScreen
+          ready={currencyResolved}
+          onDone={() => setLoading(false)}
+        />
+      )}
       <Navbar currencyCtx={currencyCtx} />
       <main>
         <Hero />

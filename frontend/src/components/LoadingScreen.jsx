@@ -1,14 +1,37 @@
 import { useEffect, useState } from "react";
 import { LOGOS } from "../data/products";
 
-export default function LoadingScreen({ onDone }) {
+export default function LoadingScreen({ onDone, ready }) {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setLeaving(true), 2200);
-    const t2 = setTimeout(() => onDone?.(), 2800);
+    // Minimum graceful viewing of the loader; if currency context resolves
+    // before this, dismiss right after the min-show. If it takes longer,
+    // wait for it (capped at 4.5s hard ceiling so we never block forever).
+    const minShow = 2200;
+    const hardCap = 4500;
+    const startedAt = Date.now();
+
+    let t2;
+    const t1 = setTimeout(function tryLeave() {
+      const elapsed = Date.now() - startedAt;
+      if (ready || elapsed >= hardCap) {
+        setLeaving(true);
+        t2 = setTimeout(() => onDone?.(), 600);
+      } else {
+        // poll until ready or hard cap reached
+        const poll = setInterval(() => {
+          if (ready || Date.now() - startedAt >= hardCap) {
+            clearInterval(poll);
+            setLeaving(true);
+            t2 = setTimeout(() => onDone?.(), 600);
+          }
+        }, 150);
+      }
+    }, minShow);
+
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [onDone]);
+  }, [onDone, ready]);
 
   return (
     <div

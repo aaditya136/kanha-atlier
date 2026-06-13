@@ -33,11 +33,7 @@ export function formatPrice(priceINR, ctx) {
     return `₹${priceINR.toLocaleString("en-IN")}`;
   }
   const usd = priceINR / (rate || 83);
-  const rounded = usd >= 1000
-    ? Math.round(usd)
-    : Math.round(usd * 100) / 100;
-  return `$${rounded.toLocaleString("en-US", {
-    minimumFractionDigits: usd >= 1000 ? 0 : 2,
-    maximumFractionDigits: usd >= 1000 ? 0 : 2,
-  })}`;
+  // Luxury feel: round to whole dollars
+  const rounded = Math.round(usd);
+  return `$${rounded.toLocaleString("en-US")}`;
 }
