@@ -22,8 +22,56 @@ const A = "https://customer-assets.emergentagent.com/job_kanha-atelier/artifacts
 const B = "https://customer-assets.emergentagent.com/job_187a559b-e45e-40a1-9602-f51fecfdbe85/artifacts";
 const U = "https://images.unsplash.com/photo"; 
 
+// Newly Uploaded 60 Images Array
+const NEW_IMAGE_FILES = [
+  "IMG-20261025-WA0058.jpg", "IMG-20261025-WA0060.jpg", "IMG-20261025-WA0061.jpg",
+  "IMG-20261025-WA0063.jpg", "IMG-20261025-WA0064.jpg", "IMG-20261025-WA0065.jpg",
+  "IMG-20261025-WA0066.jpg", "IMG-20261025-WA0067.jpg", "IMG-20261025-WA0068.jpg",
+  "IMG-20261025-WA0069.jpg", "IMG-20261025-WA0070.jpg", "IMG-20261025-WA0071.jpg",
+  "IMG-20261025-WA0072.jpg", "IMG-20261025-WA0073.jpg", "IMG-20261025-WA0074.jpg",
+  "IMG-20261025-WA0075.jpg", "IMG-20261025-WA0076.jpg", "IMG-20261025-WA0077.jpg",
+  "IMG-20261025-WA0078.jpg", "IMG-20261025-WA0079.jpg", "IMG-20261025-WA0080.jpg",
+  "IMG-20261025-WA0081.jpg", "IMG-20261025-WA0082.jpg", "IMG-20261025-WA0083.jpg",
+  "IMG-20261025-WA0084.jpg", "IMG-20261025-WA0085.jpg", "IMG-20261025-WA0086.jpg",
+  "IMG-20261025-WA0087.jpg", "IMG-20261025-WA0088.jpg", "IMG-20261025-WA0089.jpg",
+  "IMG-20261025-WA0090.jpg", "IMG-20261025-WA0091.jpg", "IMG-20261025-WA0092.jpg",
+  "IMG-20261025-WA0093.jpg", "IMG-20261025-WA0094.jpg", "IMG-20261025-WA0095.jpg",
+  "IMG-20261025-WA0096.jpg", "IMG-20261025-WA0097.jpg", "IMG-20261025-WA0098.jpg",
+  "IMG-20261025-WA0099.jpg", "IMG-20261025-WA0100.jpg", "IMG-20261025-WA0101.jpg",
+  "IMG-20261025-WA0102.jpg", "IMG-20261025-WA0103.jpg", "IMG-20261025-WA0104.jpg",
+  "IMG-20261025-WA0105.jpg", "IMG-20261025-WA0108.jpg", "IMG-20261025-WA0109.jpg",
+  "IMG-20261025-WA0110.jpg", "IMG-20261025-WA0111.jpg", "IMG-20261025-WA0112.jpg",
+  "IMG-20261025-WA0113.jpg", "IMG-20261025-WA0114.jpg", "IMG-20261025-WA0115.jpg",
+  "IMG-20261025-WA0116.jpg", "IMG-20261025-WA0117.jpg", "IMG-20261025-WA0118.jpg",
+  "IMG-20261025-WA0119.jpg", "IMG-20261025-WA0120.jpg", "IMG-20261025-WA0121.jpg"
+];
+
+const CATEGORIES = ["Luxury Round Rugs", "Handcrafted Runners", "Modern Minimalist", "Boho Heritage"];
+
+const NEW_PRODUCTS = NEW_IMAGE_FILES.map((file, idx) => {
+  const num = idx + 1;
+  const imagePath = `/images/products/${file}`;
+  return {
+    id: `KA-NEW-${String(num).padStart(3, '0')}`,
+    name: `Kanha Atelier Signature Edition ${num}`,
+    tier: idx % 2 === 0 ? "Luxury" : "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    availability: "24/7 Available",
+    size: "2 ft × 4 ft",
+    priceINR: 14195,
+    image: imagePath,
+    images: [imagePath],
+    description: "Handcrafted artisan rug woven in Bhadohi-Mirzapur weaving center. Exceptional finish with customizable size options."
+  };
+});
+
 export const PRODUCTS = [
-  // --- NEW PDF CATALOG DESIGNS (WITH MULTI-IMAGES & DYNAMIC SIZES) ---
+  // --- NEWLY ADDED 60 CARPET PRODUCTS ---
+  ...NEW_PRODUCTS,
+
+  // --- NEW PDF CATALOG DESIGNS ---
   {
     id: "KA-PDF-001",
     name: "Royal Peacock Heritage Rug",
@@ -77,7 +125,7 @@ export const PRODUCTS = [
     description: "Creative wooden painter palette design with rich multi-color swatch spots and detailed paintbrush motif."
   },
 
-  // --- ORIGINAL CATALOG ITEMS (ALL SAVED) ---
+  // --- ORIGINAL CATALOG ITEMS ---
   {
     id: "KA-PRM-001",
     name: "Royal Tabriz Medallion",
