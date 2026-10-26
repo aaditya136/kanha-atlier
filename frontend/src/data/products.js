@@ -22,56 +22,104 @@ const A = "https://customer-assets.emergentagent.com/job_kanha-atelier/artifacts
 const B = "https://customer-assets.emergentagent.com/job_187a559b-e45e-40a1-9602-f51fecfdbe85/artifacts";
 const U = "https://images.unsplash.com/photo"; 
 
-// Newly Uploaded 60 Images Array
-const NEW_IMAGE_FILES = [
-  "IMG-20261025-WA0058.jpg", "IMG-20261025-WA0060.jpg", "IMG-20261025-WA0061.jpg",
-  "IMG-20261025-WA0063.jpg", "IMG-20261025-WA0064.jpg", "IMG-20261025-WA0065.jpg",
-  "IMG-20261025-WA0066.jpg", "IMG-20261025-WA0067.jpg", "IMG-20261025-WA0068.jpg",
-  "IMG-20261025-WA0069.jpg", "IMG-20261025-WA0070.jpg", "IMG-20261025-WA0071.jpg",
-  "IMG-20261025-WA0072.jpg", "IMG-20261025-WA0073.jpg", "IMG-20261025-WA0074.jpg",
-  "IMG-20261025-WA0075.jpg", "IMG-20261025-WA0076.jpg", "IMG-20261025-WA0077.jpg",
-  "IMG-20261025-WA0078.jpg", "IMG-20261025-WA0079.jpg", "IMG-20261025-WA0080.jpg",
-  "IMG-20261025-WA0081.jpg", "IMG-20261025-WA0082.jpg", "IMG-20261025-WA0083.jpg",
-  "IMG-20261025-WA0084.jpg", "IMG-20261025-WA0085.jpg", "IMG-20261025-WA0086.jpg",
-  "IMG-20261025-WA0087.jpg", "IMG-20261025-WA0088.jpg", "IMG-20261025-WA0089.jpg",
-  "IMG-20261025-WA0090.jpg", "IMG-20261025-WA0091.jpg", "IMG-20261025-WA0092.jpg",
-  "IMG-20261025-WA0093.jpg", "IMG-20261025-WA0094.jpg", "IMG-20261025-WA0095.jpg",
-  "IMG-20261025-WA0096.jpg", "IMG-20261025-WA0097.jpg", "IMG-20261025-WA0098.jpg",
-  "IMG-20261025-WA0099.jpg", "IMG-20261025-WA0100.jpg", "IMG-20261025-WA0101.jpg",
-  "IMG-20261025-WA0102.jpg", "IMG-20261025-WA0103.jpg", "IMG-20261025-WA0104.jpg",
-  "IMG-20261025-WA0105.jpg", "IMG-20261025-WA0108.jpg", "IMG-20261025-WA0109.jpg",
-  "IMG-20261025-WA0110.jpg", "IMG-20261025-WA0111.jpg", "IMG-20261025-WA0112.jpg",
-  "IMG-20261025-WA0113.jpg", "IMG-20261025-WA0114.jpg", "IMG-20261025-WA0115.jpg",
-  "IMG-20261025-WA0116.jpg", "IMG-20261025-WA0117.jpg", "IMG-20261025-WA0118.jpg",
-  "IMG-20261025-WA0119.jpg", "IMG-20261025-WA0120.jpg", "IMG-20261025-WA0121.jpg"
-];
+// ---------------------------------------------------------------
+// Each carpet DESIGN is ONE product with many photos (gallery).
+// Price depends only on SIZE (see SIZE_PRICE_MAP above), not on design.
+// Photos live in: public/images/carpets/<design-folder>/1.jpg, 2.jpg ...
+// ---------------------------------------------------------------
+const gallery = (slug, count) =>
+  Array.from({ length: count }, (_, i) => `/images/carpets/${slug}/${i + 1}.jpg`);
 
-const CATEGORIES = ["Luxury Round Rugs", "Handcrafted Runners", "Modern Minimalist", "Boho Heritage"];
-
-const NEW_PRODUCTS = NEW_IMAGE_FILES.map((file, idx) => {
-  const num = idx + 1;
-  const imagePath = `/images/products/${file}`;
+const sizePriced = (slug, count) => {
+  const images = gallery(slug, count);
   return {
-    id: `KA-NEW-${String(num).padStart(3, '0')}`,
-    name: `Kanha Atelier Signature Edition ${num}`,
-    tier: idx % 2 === 0 ? "Luxury" : "Premium",
+    availability: "24/7 Available",
+    sizes: SIZE_PRICE_MAP,
+    size: `${SIZE_PRICE_MAP.length} sizes available`,
+    priceINR: SIZE_PRICE_MAP[0].priceINR, // "From" price = smallest size
+    image: images[0],
+    images,
+  };
+};
+
+const NEW_PRODUCTS = [
+  {
+    id: "KA-NEW-001",
+    name: "Heritage Border Rug",
+    tier: "Premium",
     material: "Pure Hand-Knotted Wool & Cotton",
     origin: "Bhadohi / Mirzapur Atelier",
     knotCount: "350 knots / sq. inch",
-    availability: "24/7 Available",
-    size: "2 ft × 4 ft",
-    priceINR: 14195,
-    image: imagePath,
-    images: [imagePath],
-    description: "Handcrafted artisan rug woven in Bhadohi-Mirzapur weaving center. Exceptional finish with customizable size options."
-  };
-});
+    ...sizePriced("heritage-border-carpet", 8),
+    description: "Handwoven beige carpet with a bold green, cream and black geometric border.",
+  },
+  {
+    id: "KA-NEW-002",
+    name: "Sunburst Round Rug",
+    tier: "Luxury",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("sunburst-round-carpet", 8),
+    description: "Round handwoven carpet in concentric rings of mustard, teal, navy and rust.",
+  },
+  {
+    id: "KA-NEW-003",
+    name: "Fish Motif Runner",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("fish-motif-runner", 6),
+    description: "Long runner with hand-drawn fish motifs, a navy border and fringed ends.",
+  },
+  {
+    id: "KA-NEW-004",
+    name: "Rose Ripple Round Rug",
+    tier: "Luxury",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("rose-ripple-round-carpet", 6),
+    description: "Round carpet in layered shades of rose pink and crimson.",
+  },
+  {
+    id: "KA-NEW-005",
+    name: "Lavender Scallop Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("lavender-scallop-carpet", 6),
+    description: "Scalloped-edge round carpet in plum, lilac and cream rings.",
+  },
+  {
+    id: "KA-NEW-006",
+    name: "Crimson Bloom Scallop Rug",
+    tier: "Luxury",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("crimson-bloom-scallop-carpet", 7),
+    description: "Flower-edged round carpet in crimson, blush, tan and black.",
+  },
+  {
+    id: "KA-NEW-007",
+    name: "Earth Tone Rings Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("earth-tone-rings-carpet", 5),
+    description: "Round carpet in concentric rings of black, brown, tan and cream.",
+  },
+];
 
 export const PRODUCTS = [
-  // --- NEWLY ADDED 60 CARPET PRODUCTS ---
+  // --- NEW GALLERY DESIGNS (many photos per product) ---
   ...NEW_PRODUCTS,
 
-  // --- NEW PDF CATALOG DESIGNS ---
+  // --- PDF CATALOG DESIGNS (old details kept, real photos now used) ---
   {
     id: "KA-PDF-001",
     name: "Royal Peacock Heritage Rug",
@@ -79,16 +127,8 @@ export const PRODUCTS = [
     material: "Hand-Knotted Pure Wool & Silk Blend",
     origin: "Mirzapur / Bhadohi Atelier",
     knotCount: "450 knots / sq. inch",
-    availability: "24/7 Available",
-    size: "4 ft × 6 ft",
-    priceINR: 45925,
-    image: `${U}-1600166898405-da9535204843?w=900&h=1125&fit=crop&auto=format&q=80`,
-    images: [
-      `${U}-1600166898405-da9535204843?w=900&h=1125&fit=crop&auto=format&q=80`,
-      `${A}/lt3wafb7_WhatsApp%20Image%202026-06-13%20at%201.32.33%20PM.jpeg`,
-      `${U}-1567225557594-88d73e55f2cb?w=900&h=1125&fit=crop&auto=format&q=80`
-    ],
-    description: "Intricate Royal Peacock design featuring vivid turquoise and emerald hues with fine fringe finishing."
+    ...sizePriced("royal-peacock-carpet", 3),
+    description: "Intricate Royal Peacock design featuring vivid turquoise and emerald hues with fine fringe finishing.",
   },
   {
     id: "KA-PDF-002",
@@ -97,15 +137,8 @@ export const PRODUCTS = [
     material: "Plush Soft Microfiber Wool",
     origin: "Bhadohi Looms",
     knotCount: "320 knots / sq. inch",
-    availability: "24/7 Available",
-    size: "3 ft × 5 ft",
-    priceINR: 33317,
-    image: `${U}-1583845112203-29329902332e?w=900&h=1125&fit=crop&auto=format&q=80`,
-    images: [
-      `${U}-1583845112203-29329902332e?w=900&h=1125&fit=crop&auto=format&q=80`,
-      `${U}-1631679706909-1844bbd07221?w=900&h=1125&fit=crop&auto=format&q=80`
-    ],
-    description: "Deep midnight blue organic curved rug featuring golden crescent moon and glittering star accents."
+    ...sizePriced("crescent-moon-night-carpet", 6),
+    description: "Deep midnight blue organic curved rug featuring golden crescent moon and glittering star accents.",
   },
   {
     id: "KA-PDF-003",
@@ -114,15 +147,8 @@ export const PRODUCTS = [
     material: "High-Density Premium Cotton Weave",
     origin: "Mirzapur",
     knotCount: "250 knots / sq. inch",
-    availability: "24/7 Available",
-    size: "4 ft × 4 ft",
-    priceINR: 37575,
-    image: `${U}-1579656592043-a20e25a4aa4b?w=900&h=1125&fit=crop&auto=format&q=80`,
-    images: [
-      `${U}-1579656592043-a20e25a4aa4b?w=900&h=1125&fit=crop&auto=format&q=80`,
-      `${U}-1584100936595-c0654b55a2e2?w=900&h=1125&fit=crop&auto=format&q=80`
-    ],
-    description: "Creative wooden painter palette design with rich multi-color swatch spots and detailed paintbrush motif."
+    ...sizePriced("artist-palette-carpet", 5),
+    description: "Creative wooden painter palette design with rich multi-color swatch spots and detailed paintbrush motif.",
   },
 
   // --- ORIGINAL CATALOG ITEMS ---

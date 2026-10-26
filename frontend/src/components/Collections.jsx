@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { PRODUCTS } from "../data/products";
-import { formatPrice } from "../lib/currency";
+import { formatPrice, formatSizePrice } from "../lib/currency";
+import ProductModal from "./ProductModal";
 import { buildWhatsAppLink } from "../lib/whatsapp";
 import { MessageCircle } from "lucide-react";
 
@@ -8,6 +9,7 @@ const TIERS = ["All", "Luxury", "Premium", "Standard", "Budget"];
 
 export default function Collections({ currencyCtx }) {
   const [filter, setFilter] = useState("All");
+  const [selected, setSelected] = useState(null);
 
   const items = useMemo(
     () =>
@@ -70,7 +72,9 @@ export default function Collections({ currencyCtx }) {
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" data-testid="product-grid">
           {items.map((p) => {
-            const priceLabel = formatPrice(p.priceINR, currencyCtx);
+            const priceLabel = p.sizes
+              ? formatSizePrice(p.sizes[0], currencyCtx)
+              : formatPrice(p.priceINR, currencyCtx);
             const link = buildWhatsAppLink({
               productName: p.name,
               productId: p.id,
@@ -82,7 +86,20 @@ export default function Collections({ currencyCtx }) {
                 className="ka-card group flex flex-col"
                 data-testid={`product-card-${p.id}`}
               >
-                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--ka-navy-800)]">
+                <div
+                  className="relative aspect-[4/5] overflow-hidden bg-[var(--ka-navy-800)] cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View ${p.name} photos and sizes`}
+                  onClick={() => setSelected(p)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelected(p);
+                    }
+                  }}
+                  data-testid={`product-open-${p.id}`}
+                >
                   <img
                     src={p.image}
                     alt={p.name}
@@ -95,6 +112,11 @@ export default function Collections({ currencyCtx }) {
                       {p.tier}
                     </span>
                   </div>
+                  {p.images.length > 1 && (
+                    <div className="absolute top-4 right-4">
+                      <span className="tier-chip">{p.images.length} photos</span>
+                    </div>
+                  )}
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                     <div>
                       <div className="text-[10px] tracking-[0.3em] uppercase text-[var(--ka-ivory)]/55">
@@ -139,6 +161,15 @@ export default function Collections({ currencyCtx }) {
                     {p.description}
                   </p>
 
+                  <button
+                    type="button"
+                    onClick={() => setSelected(p)}
+                    className="mt-4 self-start text-[11px] tracking-[0.25em] uppercase text-[var(--ka-gold-300)] hover:text-[var(--ka-gold-400)] underline underline-offset-4"
+                    data-testid={`product-details-${p.id}`}
+                  >
+                    {p.sizes ? "View photos & sizes" : "View details"}
+                  </button>
+
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <div>
                       <div className="text-[10px] tracking-[0.3em] uppercase text-[var(--ka-ivory)]/55">
@@ -169,6 +200,15 @@ export default function Collections({ currencyCtx }) {
           })}
         </div>
       </div>
+
+      {selected && (
+        <ProductModal
+          key={selected.id}
+          product={selected}
+          currencyCtx={currencyCtx}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </section>
   );
 }

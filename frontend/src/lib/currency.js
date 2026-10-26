@@ -97,3 +97,11 @@ export function formatPrice(priceINR, ctx) {
   const rounded = Math.round(usd);
   return `$${rounded.toLocaleString("en-US")}`;
 }
+
+// Size-priced carpets: show the exact USD/INR price from the size chart
+export function formatSizePrice(entry, ctx) {
+  if (ctx && ctx.geo && ctx.geo.currency !== "INR") {
+    return `$${entry.priceUSD.toLocaleString("en-US")}`;
+  }
+  return `₹${entry.priceINR.toLocaleString("en-IN")}`;
+}
