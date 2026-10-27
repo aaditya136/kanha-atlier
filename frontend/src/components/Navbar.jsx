@@ -9,6 +9,7 @@ const LINKS = [
   { id: "craftsmanship", label: "Craftsmanship" },
   { id: "atelier-gram", label: "Instagram" },
   { id: "about", label: "Atelier" },
+  { id: "reviews", label: "Reviews" },
   { id: "contact", label: "Contact" },
 ];
 

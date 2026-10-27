@@ -1,6 +1,6 @@
 import { WHATSAPP_NUMBER } from "../data/products";
 
-export function buildWhatsAppLink({ productName, productId, priceLabel, size } = {}) {
+export function buildWhatsAppLink({ productName, productId, priceLabel, size, color } = {}) {
   let msg;
   if (productName && productId) {
     msg = `Hi Kanha Atelier, I am interested in ordering the "${productName}" (${productId}${
@@ -10,4 +10,9 @@ export function buildWhatsAppLink({ productName, productId, priceLabel, size } =
     msg = `Hi Kanha Atelier, I would love to learn more about your handcrafted collection. Please share the details!`;
   }
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+// Free-text WhatsApp message to the atelier (used by the review form)
+export function buildWhatsAppText(text) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }

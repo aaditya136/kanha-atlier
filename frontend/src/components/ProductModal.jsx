@@ -6,7 +6,11 @@ import { buildWhatsAppLink } from "../lib/whatsapp";
 export default function ProductModal({ product: p, currencyCtx, onClose }) {
   const [active, setActive] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(0);
-  const count = p.images.length;
+  const [colorIdx, setColorIdx] = useState(0);
+
+  const color = p.colors ? p.colors[colorIdx] : null;
+  const images = color ? color.images : p.images;
+  const count = images.length;
 
   useEffect(() => {
     const onKey = (e) => {
@@ -23,6 +27,11 @@ export default function ProductModal({ product: p, currencyCtx, onClose }) {
     };
   }, [count, onClose]);
 
+  const pickColor = (i) => {
+    setColorIdx(i);
+    setActive(0);
+  };
+
   const sizeLabel = p.sizes ? p.sizes[sizeIdx].size : p.size;
   const priceLabel = p.sizes
     ? formatSizePrice(p.sizes[sizeIdx], currencyCtx)
@@ -32,6 +41,7 @@ export default function ProductModal({ product: p, currencyCtx, onClose }) {
     productId: p.id,
     priceLabel,
     size: sizeLabel,
+    color: color ? color.name : undefined,
   });
 
   return (
@@ -61,7 +71,7 @@ export default function ProductModal({ product: p, currencyCtx, onClose }) {
         <div className="p-4 sm:p-6">
           <div className="relative aspect-square bg-[var(--ka-navy-800)] overflow-hidden">
             <img
-              src={p.images[active]}
+              src={images[active]}
               alt={`${p.name} – photo ${active + 1}`}
               className="absolute inset-0 w-full h-full object-contain"
             />
@@ -89,7 +99,7 @@ export default function ProductModal({ product: p, currencyCtx, onClose }) {
 
           {count > 1 && (
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1" data-testid="product-thumbs">
-              {p.images.map((src, i) => (
+              {images.map((src, i) => (
                 <button
                   type="button"
                   key={src}
@@ -129,6 +139,36 @@ export default function ProductModal({ product: p, currencyCtx, onClose }) {
               <div className="mt-1">{p.origin}</div>
             </div>
           </div>
+
+          {p.colors && (
+            <div className="mt-6" data-testid="color-options">
+              <div className="text-[10px] tracking-[0.3em] uppercase text-[var(--ka-ivory)]/55 mb-2">
+                Colour · <span className="text-[var(--ka-gold-300)]">{color.name}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {p.colors.map((c, i) => (
+                  <button
+                    type="button"
+                    key={c.name}
+                    onClick={() => pickColor(i)}
+                    aria-label={`Colour ${c.name}`}
+                    title={c.name}
+                    className={`flex items-center gap-2 px-3 py-2 text-[11px] border transition-all ${
+                      i === colorIdx
+                        ? "border-[var(--ka-gold-400)] bg-[rgba(231,198,106,0.12)] text-[var(--ka-ivory)]"
+                        : "border-[rgba(212,175,55,0.35)] text-[var(--ka-ivory)]/75 hover:border-[var(--ka-gold-400)]"
+                    }`}
+                  >
+                    <span
+                      className="inline-block w-4 h-4 rounded-full border border-white/30"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {p.sizes ? (
             <div className="mt-6">

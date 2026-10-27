@@ -114,7 +114,9 @@ export default function Collections({ currencyCtx }) {
                   </div>
                   {p.images.length > 1 && (
                     <div className="absolute top-4 right-4">
-                      <span className="tier-chip">{p.images.length} photos</span>
+                      <span className="tier-chip">
+                        {p.colors ? `${p.colors.length} colours` : `${p.images.length} photos`}
+                      </span>
                     </div>
                   )}
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
@@ -167,7 +169,7 @@ export default function Collections({ currencyCtx }) {
                     className="mt-4 self-start text-[11px] tracking-[0.25em] uppercase text-[var(--ka-gold-300)] hover:text-[var(--ka-gold-400)] underline underline-offset-4"
                     data-testid={`product-details-${p.id}`}
                   >
-                    {p.sizes ? "View photos & sizes" : "View details"}
+                    {p.sizes ? "View photos, colours & sizes" : "View details"}
                   </button>
 
                   <div className="mt-6 flex items-center justify-between gap-4">

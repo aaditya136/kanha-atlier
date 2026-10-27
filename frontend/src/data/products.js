@@ -24,22 +24,32 @@ const U = "https://images.unsplash.com/photo";
 
 // ---------------------------------------------------------------
 // Each carpet DESIGN is ONE product with many photos (gallery).
-// Price depends only on SIZE (see SIZE_PRICE_MAP above), not on design.
-// Photos live in: public/images/carpets/<design-folder>/1.jpg, 2.jpg ...
+// Same design in different COLOURS = ONE product with colour options.
+// Price depends only on SIZE (see SIZE_PRICE_MAP above), not on design/colour.
+// Photos live in: public/images/carpets/<folder>/1.jpg, 2.jpg ...
 // ---------------------------------------------------------------
 const gallery = (slug, count) =>
   Array.from({ length: count }, (_, i) => `/images/carpets/${slug}/${i + 1}.jpg`);
 
-const sizePriced = (slug, count) => {
-  const images = gallery(slug, count);
-  return {
-    availability: "24/7 Available",
-    sizes: SIZE_PRICE_MAP,
-    size: `${SIZE_PRICE_MAP.length} sizes available`,
-    priceINR: SIZE_PRICE_MAP[0].priceINR, // "From" price = smallest size
-    image: images[0],
-    images,
-  };
+const sizeFields = (images) => ({
+  availability: "24/7 Available",
+  sizes: SIZE_PRICE_MAP,
+  size: `${SIZE_PRICE_MAP.length} sizes available`,
+  priceINR: SIZE_PRICE_MAP[0].priceINR, // "From" price = smallest size
+  image: images[0],
+  images,
+});
+
+const sizePriced = (slug, count) => sizeFields(gallery(slug, count));
+
+// list of [colour name, colour dot, photo folder, number of photos]
+const colorPriced = (list) => {
+  const colors = list.map(([name, hex, slug, count]) => ({
+    name,
+    hex,
+    images: gallery(slug, count),
+  }));
+  return { ...sizeFields(colors.flatMap((c) => c.images)), colors };
 };
 
 const NEW_PRODUCTS = [
@@ -55,13 +65,13 @@ const NEW_PRODUCTS = [
   },
   {
     id: "KA-NEW-002",
-    name: "Sunburst Round Rug",
+    name: "Concentric Rings Round Rug",
     tier: "Luxury",
     material: "Pure Hand-Knotted Wool & Cotton",
     origin: "Bhadohi / Mirzapur Atelier",
     knotCount: "350 knots / sq. inch",
-    ...sizePriced("sunburst-round-carpet", 8),
-    description: "Round handwoven carpet in concentric rings of mustard, teal, navy and rust.",
+    ...colorPriced([["Sunburst", "#e0a82e", "sunburst-round-carpet", 8], ["Rose Pink", "#e0457b", "rose-ripple-round-carpet", 6], ["Earth Tone", "#8a5a3a", "earth-tone-rings-carpet", 5]]),
+    description: "Round handwoven carpet in concentric rings. Choose your colourway: Sunburst, Rose or Earth Tone.",
   },
   {
     id: "KA-NEW-003",
@@ -74,44 +84,174 @@ const NEW_PRODUCTS = [
     description: "Long runner with hand-drawn fish motifs, a navy border and fringed ends.",
   },
   {
-    id: "KA-NEW-004",
-    name: "Rose Ripple Round Rug",
-    tier: "Luxury",
-    material: "Pure Hand-Knotted Wool & Cotton",
-    origin: "Bhadohi / Mirzapur Atelier",
-    knotCount: "350 knots / sq. inch",
-    ...sizePriced("rose-ripple-round-carpet", 6),
-    description: "Round carpet in layered shades of rose pink and crimson.",
-  },
-  {
     id: "KA-NEW-005",
-    name: "Lavender Scallop Rug",
-    tier: "Premium",
-    material: "Pure Hand-Knotted Wool & Cotton",
-    origin: "Bhadohi / Mirzapur Atelier",
-    knotCount: "350 knots / sq. inch",
-    ...sizePriced("lavender-scallop-carpet", 6),
-    description: "Scalloped-edge round carpet in plum, lilac and cream rings.",
-  },
-  {
-    id: "KA-NEW-006",
-    name: "Crimson Bloom Scallop Rug",
+    name: "Scalloped Rings Round Rug",
     tier: "Luxury",
     material: "Pure Hand-Knotted Wool & Cotton",
     origin: "Bhadohi / Mirzapur Atelier",
     knotCount: "350 knots / sq. inch",
-    ...sizePriced("crimson-bloom-scallop-carpet", 7),
-    description: "Flower-edged round carpet in crimson, blush, tan and black.",
+    ...colorPriced([["Lavender", "#a574c9", "lavender-scallop-carpet", 6], ["Crimson", "#b3123f", "crimson-bloom-scallop-carpet", 7]]),
+    description: "Scalloped-edge round carpet in layered rings. Available in Lavender and Crimson.",
   },
   {
-    id: "KA-NEW-007",
-    name: "Earth Tone Rings Rug",
+    id: "KA-NEW-008",
+    name: "Scalloped Frame Rug",
     tier: "Premium",
     material: "Pure Hand-Knotted Wool & Cotton",
     origin: "Bhadohi / Mirzapur Atelier",
     knotCount: "350 knots / sq. inch",
-    ...sizePriced("earth-tone-rings-carpet", 5),
-    description: "Round carpet in concentric rings of black, brown, tan and cream.",
+    ...colorPriced([["Sky Blue", "#8fb0d8", "scalloped-frame-sky-blue", 5], ["Sage Green", "#a8b48a", "scalloped-frame-sage", 5]]),
+    description: "Soft solid centre framed by a scalloped double border. Available in Sky Blue and Sage Green.",
+  },
+  {
+    id: "KA-NEW-009",
+    name: "Ogee Lattice Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("ogee-lattice-blue", 5),
+    description: "Sky blue ogee lattice pattern with a navy frame and a scalloped cream border.",
+  },
+  {
+    id: "KA-NEW-010",
+    name: "Cloud Edge Solid Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("cloud-edge-solid-blue", 5),
+    description: "Plush solid blue carpet with a soft scalloped cloud edge.",
+  },
+  {
+    id: "KA-NEW-011",
+    name: "Wavy Ripple Border Rug",
+    tier: "Luxury",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("wavy-ripple-border", 3),
+    description: "Cream carpet with a flowing wavy border in mustard and olive green.",
+  },
+  {
+    id: "KA-NEW-012",
+    name: "Arch Tile Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("arch-tile-sage", 5),
+    description: "Cream carpet with a sage grid and arched scalloped edges.",
+  },
+  {
+    id: "KA-NEW-013",
+    name: "Scalloped Checkerboard Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...colorPriced([["Sage Green", "#a8b48a", "checkerboard-sage", 6], ["Mocha Brown", "#7a6048", "checkerboard-mocha", 5]]),
+    description: "Classic checkerboard with a scalloped edge. Available in Sage Green and Mocha Brown.",
+  },
+  {
+    id: "KA-NEW-014",
+    name: "Moon & Bats Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...colorPriced([["Midnight Black", "#111111", "moon-bats-black", 5], ["Lavender", "#a98bd6", "moon-bats-lavender", 7]]),
+    description: "Cream carpet with a crescent moon, golden stars and little bats. Available in Midnight Black and Lavender edges.",
+  },
+  {
+    id: "KA-NEW-015",
+    name: "Checker Frame Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("checker-frame-mustard", 6),
+    description: "Cream carpet with a teal checkered frame and a mustard scalloped edge.",
+  },
+  {
+    id: "KA-NEW-016",
+    name: "Bubble Edge Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("bubble-edge-purple", 4),
+    description: "Solid purple carpet with a playful bubble-scalloped edge.",
+  },
+  {
+    id: "KA-NEW-017",
+    name: "Rainbow Stripe Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("rainbow-stripe", 4),
+    description: "Bright rainbow stripes framed by a lilac scalloped border.",
+  },
+  {
+    id: "KA-NEW-018",
+    name: "Starry Night Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("starry-night-navy", 5),
+    description: "Deep navy carpet scattered with colourful hand-tufted stars.",
+  },
+  {
+    id: "KA-NEW-019",
+    name: "Olive & Navy Round Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("olive-round-navy", 5),
+    description: "Round olive green carpet with a cream ring and a navy border.",
+  },
+  {
+    id: "KA-NEW-020",
+    name: "Pastel Blocks Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("pastel-blocks", 4),
+    description: "Cream carpet with pastel pink, blue and green blocks and a sky-blue scalloped edge.",
+  },
+  {
+    id: "KA-NEW-021",
+    name: "Candy Stripe Rug",
+    tier: "Premium",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("candy-stripe", 5),
+    description: "Soft pink and lavender stripes with a scalloped pink edge.",
+  },
+  {
+    id: "KA-NEW-022",
+    name: "Teal Outline Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("teal-outline", 4),
+    description: "Teal carpet with a cream inner frame and a cream scalloped outline.",
+  },
+  {
+    id: "KA-NEW-023",
+    name: "Full Moon Night Rug",
+    tier: "Standard",
+    material: "Pure Hand-Knotted Wool & Cotton",
+    origin: "Bhadohi / Mirzapur Atelier",
+    knotCount: "350 knots / sq. inch",
+    ...sizePriced("full-moon-night", 5),
+    description: "Navy carpet with a glowing cream full moon and golden stars.",
   },
 ];
 

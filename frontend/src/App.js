@@ -10,6 +10,7 @@ import Collections from "./components/Collections";
 import Craftsmanship from "./components/Craftsmanship";
 import InstagramStrip from "./components/InstagramStrip";
 import About from "./components/About";
+import Reviews from "./components/Reviews";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import { detectCurrency } from "./lib/currency";
@@ -51,6 +52,7 @@ const Home = () => {
         <Craftsmanship />
         <InstagramStrip />
         <About />
+        <Reviews />
         <Contact />
       </main>
       <Footer />
