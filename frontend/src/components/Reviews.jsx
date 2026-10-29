@@ -1,16 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PRODUCTS } from "../data/products";
-import { REVIEWS } from "../data/reviews";
-import { buildWhatsAppText } from "../lib/whatsapp";
-
-// Optional: free key from web3forms.com (sends each review to your email).
-// Without it, the review opens as a ready-to-send WhatsApp message instead.
-const WEB3FORMS_KEY = process.env.REACT_APP_WEB3FORMS_KEY;
+import { fetchReviews, addReview } from "../lib/supabase";
 
 const field =
   "w-full bg-[var(--ka-navy-800)] border border-[var(--ka-line)] text-[var(--ka-ivory)] px-4 py-3 text-sm outline-none focus:border-[var(--ka-gold-400)] placeholder:text-[var(--ka-ivory)]/40";
+
+const COOLDOWN_MS = 10 * 60 * 1000; // one review per device every 10 minutes
+const LINK_RE = /(https?:\/\/|www\.)/i;
 
 function Stars({ value, size = 16 }) {
   return (
@@ -27,66 +25,88 @@ function Stars({ value, size = 16 }) {
   );
 }
 
+const fmtDate = (iso) => {
+  try {
+    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  } catch (e) {
+    return "";
+  }
+};
+
 export default function Reviews() {
+  const [reviews, setReviews] = useState([]);
+  const [status, setStatus] = useState("loading"); // loading | ready | error
   const [form, setForm] = useState({
     name: "",
     city: "",
     rating: 5,
     product: "",
-    text: "",
+    body: "",
     genuine: false,
     botcheck: "",
   });
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetchReviews()
+      .then((rows) => {
+        if (!alive) return;
+        setReviews(Array.isArray(rows) ? rows : []);
+        setStatus("ready");
+      })
+      .catch(() => alive && setStatus("error"));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
 
-  const avg = REVIEWS.length
-    ? (REVIEWS.reduce((s, r) => s + r.rating, 0) / REVIEWS.length).toFixed(1)
-    : null;
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null;
 
   const submit = async (e) => {
     e.preventDefault();
     if (form.botcheck) return; // spam bots fill this hidden field
-    if (form.name.trim().length < 2) return toast.error("Please enter your name.");
-    if (form.text.trim().length < 20) return toast.error("Please write at least 20 characters.");
-    if (!form.genuine) return toast.error("Please confirm you are a genuine customer or visitor.");
+    const name = form.name.trim();
+    const body = form.body.trim();
+    if (name.length < 2) return toast.error("Please enter your name.");
+    if (body.length < 20) return toast.error("Please write at least 20 characters.");
+    if (LINK_RE.test(body)) return toast.error("Links are not allowed in reviews.");
+    if (!form.genuine) return toast.error("Please confirm this is your own honest experience.");
 
-    const lines = [
-      "New review for Kanha Atelier website",
-      `Name: ${form.name.trim()}`,
-      form.city.trim() && `City: ${form.city.trim()}`,
-      `Rating: ${form.rating}/5`,
-      form.product && `Product: ${form.product}`,
-      `Review: ${form.text.trim()}`,
-    ].filter(Boolean);
-    const message = lines.join("\n");
+    try {
+      const last = Number(localStorage.getItem("ka_last_review") || 0);
+      if (Date.now() - last < COOLDOWN_MS) {
+        return toast.error("You have just posted a review. Please try again a little later.");
+      }
+    } catch (err) {
+      /* storage blocked - ignore */
+    }
+
+    const row = {
+      name,
+      city: form.city.trim() || null,
+      rating: form.rating,
+      product: form.product || null,
+      body,
+    };
 
     setBusy(true);
     try {
-      if (WEB3FORMS_KEY) {
-        const res = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            access_key: WEB3FORMS_KEY,
-            subject: "New customer review - Kanha Atelier",
-            from_name: form.name.trim(),
-            message,
-          }),
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error("send failed");
-      } else {
-        window.open(buildWhatsAppText(message), "_blank", "noopener,noreferrer");
+      await addReview(row);
+      try {
+        localStorage.setItem("ka_last_review", String(Date.now()));
+      } catch (err) {
+        /* ignore */
       }
-      setSent(true);
-      setForm((f) => ({ ...f, name: "", city: "", rating: 5, product: "", text: "", genuine: false }));
-      toast.success("Thank you! Your review will appear after we verify it.");
+      setReviews((list) => [{ id: `new-${Date.now()}`, created_at: new Date().toISOString(), ...row }, ...list]);
+      setStatus("ready");
+      setForm({ name: "", city: "", rating: 5, product: "", body: "", genuine: false, botcheck: "" });
+      toast.success("Thank you! Your review is now live.");
     } catch (err) {
-      toast.error("Could not send right now. Please try again or message us on WhatsApp.");
+      toast.error("Could not post your review right now. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -111,15 +131,14 @@ export default function Reviews() {
             Words from our patrons.
           </h2>
           <p className="font-serif-italic text-[var(--ka-ivory)]/75 text-xl mt-4">
-            Share your experience with Kanha Atelier. Every review is checked
-            before it appears here.
+            Share your experience with Kanha Atelier. Reviews are written by our visitors and appear instantly.
           </p>
           {avg && (
             <div className="mt-6 inline-flex items-center gap-3 text-[var(--ka-ivory)]">
               <Stars value={Math.round(Number(avg))} size={20} />
               <span className="font-display text-2xl">{avg}</span>
               <span className="text-sm text-[var(--ka-ivory)]/60">
-                from {REVIEWS.length} review{REVIEWS.length > 1 ? "s" : ""}
+                from {reviews.length} review{reviews.length > 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -128,7 +147,18 @@ export default function Reviews() {
         <div className="mt-14 grid grid-cols-1 lg:grid-cols-5 gap-10">
           {/* Review list */}
           <div className="lg:col-span-3">
-            {REVIEWS.length === 0 ? (
+            {status === "loading" && (
+              <div className="border border-[var(--ka-line)] p-10 text-center text-[var(--ka-ivory)]/60 text-sm">
+                Loading reviews…
+              </div>
+            )}
+            {status === "error" && (
+              <div className="border border-[var(--ka-line)] p-10 text-center text-[var(--ka-ivory)]/70">
+                <p className="font-serif-italic text-xl">Reviews could not be loaded right now.</p>
+                <p className="text-sm mt-2">Please refresh in a moment. You can still write a review.</p>
+              </div>
+            )}
+            {status === "ready" && reviews.length === 0 && (
               <div
                 className="border border-[var(--ka-line)] p-10 text-center text-[var(--ka-ivory)]/70"
                 data-testid="reviews-empty"
@@ -136,21 +166,22 @@ export default function Reviews() {
                 <p className="font-serif-italic text-xl">No reviews yet.</p>
                 <p className="text-sm mt-2">Be the first to share your experience.</p>
               </div>
-            ) : (
+            )}
+            {status === "ready" && reviews.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5" data-testid="reviews-list">
-                {REVIEWS.map((r) => (
+                {reviews.map((r) => (
                   <article key={r.id} className="border border-[var(--ka-line)] bg-[var(--ka-navy-900)] p-6">
                     <Stars value={r.rating} />
-                    <p className="text-sm text-[var(--ka-ivory)]/85 mt-4 font-serif leading-relaxed">
-                      “{r.text}”
+                    <p className="text-sm text-[var(--ka-ivory)]/85 mt-4 font-serif leading-relaxed break-words">
+                      “{r.body}”
                     </p>
                     <div className="mt-5 text-[11px] tracking-[0.2em] uppercase text-[var(--ka-gold-300)]">
                       {r.name}
                       {r.city ? ` · ${r.city}` : ""}
                     </div>
-                    {r.product && (
-                      <div className="text-[11px] text-[var(--ka-ivory)]/50 mt-1">{r.product}</div>
-                    )}
+                    <div className="text-[11px] text-[var(--ka-ivory)]/50 mt-1">
+                      {[r.product, fmtDate(r.created_at)].filter(Boolean).join(" · ")}
+                    </div>
                   </article>
                 ))}
               </div>
@@ -201,8 +232,8 @@ export default function Reviews() {
             <textarea
               className={`${field} min-h-[130px]`}
               placeholder="Tell us about your experience *"
-              value={form.text}
-              onChange={set("text")}
+              value={form.body}
+              onChange={set("body")}
               maxLength={800}
             />
 
@@ -219,7 +250,7 @@ export default function Reviews() {
 
             <label className="flex items-start gap-3 text-[12px] text-[var(--ka-ivory)]/75 cursor-pointer">
               <input type="checkbox" checked={form.genuine} onChange={set("genuine")} className="mt-0.5" />
-              <span>I am a genuine customer / visitor of Kanha Atelier and this review is my own honest experience.</span>
+              <span>This review is my own honest experience.</span>
             </label>
 
             <button
@@ -229,13 +260,8 @@ export default function Reviews() {
               data-testid="review-submit"
             >
               <Send size={14} />
-              {busy ? "Sending…" : "Submit review"}
+              {busy ? "Posting…" : "Post review"}
             </button>
-            {sent && (
-              <p className="text-[12px] text-[var(--ka-gold-300)]">
-                Thank you! Your review will appear here after we verify it.
-              </p>
-            )}
           </form>
         </div>
       </div>
