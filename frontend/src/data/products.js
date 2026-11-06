@@ -37,6 +37,7 @@ const sizeFields = (images) => ({
   size: `${SIZE_PRICE_MAP.length} sizes available`,
   priceINR: SIZE_PRICE_MAP[0].priceINR, // "From" price = smallest size
   image: images[0],
+  thumb: images[0].replace(/\/1\.jpg$/, "/t1.jpg"), // small version for the product grid
   images,
 });
 

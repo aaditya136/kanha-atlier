@@ -72,6 +72,7 @@ export default function Hero() {
             data-testid="hero-heading"
             className="font-display text-[44px] sm:text-[64px] lg:text-[86px] leading-[1.02] text-[var(--ka-ivory)]"
           >
+            <span className="sr-only">Kanha Atelier — handcrafted carpets and home decor from Bhadohi, India. </span>
             Woven Heritage,
             <br />
             <span className="text-[var(--ka-gold-300)]">Elevated Living.</span>

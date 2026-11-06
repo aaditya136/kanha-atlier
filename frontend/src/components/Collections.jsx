@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PRODUCTS } from "../data/products";
 import { formatPrice, formatSizePrice } from "../lib/currency";
 import ProductModal from "./ProductModal";
 import { buildWhatsAppLink } from "../lib/whatsapp";
+import { productPath, productSlug } from "../lib/seoData";
+import { applyProductSeo, resetSeo } from "../lib/seo";
 import { MessageCircle } from "lucide-react";
 
 const TIERS = ["All", "Luxury", "Premium", "Standard", "Budget"];
@@ -10,6 +12,34 @@ const TIERS = ["All", "Luxury", "Premium", "Standard", "Budget"];
 export default function Collections({ currencyCtx }) {
   const [filter, setFilter] = useState("All");
   const [selected, setSelected] = useState(null);
+
+  // Every carpet has its own address: /carpets/<name>  (good for Google + sharing)
+  const openProduct = useCallback((p) => {
+    setSelected(p);
+    window.history.pushState({}, "", productPath(p));
+    applyProductSeo(p);
+  }, []);
+
+  const closeProduct = useCallback(() => {
+    setSelected(null);
+    if (window.location.pathname.startsWith("/carpets/")) {
+      window.history.pushState({}, "", "/");
+    }
+    resetSeo();
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const m = window.location.pathname.match(/^\/carpets\/([^/]+)\/?$/);
+      const found = m ? PRODUCTS.find((x) => productSlug(x) === m[1]) : null;
+      setSelected(found || null);
+      if (found) applyProductSeo(found);
+      else resetSeo();
+    };
+    sync(); // open the right carpet when someone arrives on /carpets/<name>
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
 
   const items = useMemo(
     () =>
@@ -43,8 +73,9 @@ export default function Collections({ currencyCtx }) {
               </span>
             </h2>
             <p className="mt-5 text-[var(--ka-ivory)]/65 max-w-xl">
-              Filter by craftsmanship tier. Every order is bespoke — confirm
-              dimensions, palette and timelines directly with the atelier.
+              Handcrafted carpets and rugs from Bhadohi — scalloped, round,
+              runner, checkerboard and kids&apos; designs. Every order is
+              bespoke: confirm size, colour and timelines directly with the atelier.
             </p>
           </div>
 
@@ -91,18 +122,18 @@ export default function Collections({ currencyCtx }) {
                   role="button"
                   tabIndex={0}
                   aria-label={`View ${p.name} photos and sizes`}
-                  onClick={() => setSelected(p)}
+                  onClick={() => openProduct(p)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      setSelected(p);
+                      openProduct(p);
                     }
                   }}
                   data-testid={`product-open-${p.id}`}
                 >
                   <img
-                    src={p.image}
-                    alt={p.name}
+                    src={p.thumb || p.image}
+                    alt={`${p.name} – handcrafted carpet by Kanha Atelier`}
                     loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                   />
@@ -163,14 +194,17 @@ export default function Collections({ currencyCtx }) {
                     {p.description}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => setSelected(p)}
+                  <a
+                    href={productPath(p)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openProduct(p);
+                    }}
                     className="mt-4 self-start text-[11px] tracking-[0.25em] uppercase text-[var(--ka-gold-300)] hover:text-[var(--ka-gold-400)] underline underline-offset-4"
                     data-testid={`product-details-${p.id}`}
                   >
                     {p.sizes ? "View photos, colours & sizes" : "View details"}
-                  </button>
+                  </a>
 
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <div>
@@ -208,7 +242,7 @@ export default function Collections({ currencyCtx }) {
           key={selected.id}
           product={selected}
           currencyCtx={currencyCtx}
-          onClose={() => setSelected(null)}
+          onClose={closeProduct}
         />
       )}
     </section>
